@@ -325,23 +325,27 @@
   <!-- AL FINAL DE TU HTML EXISTENTE, reemplaza tu función finalizarJuego() con esta: -->
 
 <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec; // <- reemplaza con tu URL real
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec'; // <- reemplaza con tu URL real
 
   function finalizarJuego() {
     clearInterval(intervalo);
 
-    // Enviar resultados a Google Sheets
+    // Enviar resultados a Google Sheets en formato JSON
     fetch(scriptURL, {
       method: 'POST',
-      body: new URLSearchParams({
+      headers: {
+        'Content-Type': 'application/json' // Especificamos que los datos son JSON
+      },
+      body: JSON.stringify({
         jugador: jugadorActual,
         correctas: respuestasCorrectas,
+        incorrectas: totalPreguntas - respuestasCorrectas,
         total: totalPreguntas
       })
     })
     .then(response => {
       if (!response.ok) throw new Error("Error al enviar resultados.");
-      return response.text();
+      return response.json(); // Suponiendo que el script de Google devuelve un JSON
     })
     .then(() => {
       // Mostrar tabla local
@@ -355,11 +359,14 @@
   }
 
   function cargarResultadosDesdeSheet() {
+    // Obtener los resultados desde Google Sheets
     fetch(scriptURL)
-      .then(res => res.json())
+      .then(res => res.json()) // Asumimos que el script de Google devuelve los datos en formato JSON
       .then(data => {
         const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-        tabla.innerHTML = ''; // Limpia contenido anterior
+        tabla.innerHTML = ''; // Limpiar contenido anterior
+
+        // Cargar los datos en la tabla
         data.forEach(fila => {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.total}</td>`;
@@ -371,6 +378,7 @@
       });
   }
 </script>
+
 
 </body>
 </html>
