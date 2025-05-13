@@ -322,19 +322,16 @@
       document.getElementById('resultados-container').style.display = 'none';
     }
   </script>
-  <!-- AL FINAL DE TU HTML EXISTENTE, reemplaza tu función finalizarJuego() con esta: -->
-
-<script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec'; // <- reemplaza con tu URL real
+  <script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec'; // <-- TU URL AQUÍ
 
   function finalizarJuego() {
     clearInterval(intervalo);
 
-    // Enviar resultados a Google Sheets en formato JSON
     fetch(scriptURL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json' // Especificamos que los datos son JSON
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         jugador: jugadorActual,
@@ -345,11 +342,10 @@
     })
     .then(response => {
       if (!response.ok) throw new Error("Error al enviar resultados.");
-      return response.json(); // Suponiendo que el script de Google devuelve un JSON
+      return response.json();
     })
     .then(() => {
-      // Mostrar tabla local
-      cargarResultadosDesdeSheet(); // <- nueva función
+      cargarResultadosDesdeSheet(); // Muestra todos los resultados desde la hoja
       document.getElementById('juego-container').style.display = 'none';
       document.getElementById('resultados-container').style.display = 'block';
     })
@@ -359,17 +355,15 @@
   }
 
   function cargarResultadosDesdeSheet() {
-    // Obtener los resultados desde Google Sheets
     fetch(scriptURL)
-      .then(res => res.json()) // Asumimos que el script de Google devuelve los datos en formato JSON
+      .then(res => res.json())
       .then(data => {
         const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-        tabla.innerHTML = ''; // Limpiar contenido anterior
+        tabla.innerHTML = '';
 
-        // Cargar los datos en la tabla
         data.forEach(fila => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.total}</td>`;
+          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;
           tabla.appendChild(tr);
         });
       })
@@ -378,7 +372,6 @@
       });
   }
 </script>
-
 
 </body>
 </html>
