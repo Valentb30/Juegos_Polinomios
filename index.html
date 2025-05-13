@@ -143,6 +143,7 @@
         <tr>
           <th>Jugador</th>
           <th>Correctas</th>
+          <th>Incorrectas</th>
           <th>Total</th>
         </tr>
       </thead>
@@ -152,6 +153,8 @@
   </div>
 
   <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec';
+
     let jugadorActual = '';
     let tiempoRestante = 120;
     let intervalo;
@@ -305,12 +308,41 @@
 
     function finalizarJuego() {
       clearInterval(intervalo);
-      const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-      const fila = document.createElement('tr');
-      fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
-      tabla.appendChild(fila);
+
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          jugador: jugadorActual,
+          correctas: respuestasCorrectas,
+          incorrectas: totalPreguntas - respuestasCorrectas,
+          total: totalPreguntas
+        })
+      }).then(response => response.json())
+        .then(() => cargarResultadosDesdeSheet())
+        .catch(error => alert("Error al guardar en la hoja de cálculo: " + error.message));
+
       document.getElementById('juego-container').style.display = 'none';
       document.getElementById('resultados-container').style.display = 'block';
+    }
+
+    function cargarResultadosDesdeSheet() {
+      fetch(scriptURL)
+        .then(res => res.json())
+        .then(data => {
+          const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
+          tabla.innerHTML = '';
+          data.forEach(fila => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;
+            tabla.appendChild(tr);
+          });
+        })
+        .catch(error => {
+          console.error("Error al cargar resultados:", error);
+        });
     }
 
     function reiniciarJuego() {
@@ -322,48 +354,6 @@
       document.getElementById('resultados-container').style.display = 'none';
     }
   </script>
-  <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // <-- TU URL AQUÍ
-
-  function finalizarJuego() {
-    clearInterval(intervalo);
-
-fetch(scriptURL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json' // Especifica que los datos son JSON
-  },
-  body: JSON.stringify({
-    jugador: jugadorActual,
-    correctas: respuestasCorrectas,
-    incorrectas: totalPreguntas - respuestasCorrectas,
-    total: totalPreguntas
-  })
-})
-.then(response => response.json())  // Asegúrate de manejar la respuesta correctamente
-.catch(error => {
-  alert("Error al guardar en la hoja de cálculo: " + error.message);
-});
-
-
-  function cargarResultadosDesdeSheet() {
-    fetch(scriptURL)
-      .then(res => res.json())
-      .then(data => {
-        const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-        tabla.innerHTML = '';
-
-        data.forEach(fila => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;
-          tabla.appendChild(tr);
-        });
-      })
-      .catch(error => {
-        console.error("Error al cargar resultados:", error);
-      });
-  }
-</script>
 
 </body>
 </html>
