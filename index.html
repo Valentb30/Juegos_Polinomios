@@ -322,5 +322,55 @@
       document.getElementById('resultados-container').style.display = 'none';
     }
   </script>
+  <!-- AL FINAL DE TU HTML EXISTENTE, reemplaza tu función finalizarJuego() con esta: -->
+
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec; // <- reemplaza con tu URL real
+
+  function finalizarJuego() {
+    clearInterval(intervalo);
+
+    // Enviar resultados a Google Sheets
+    fetch(scriptURL, {
+      method: 'POST',
+      body: new URLSearchParams({
+        jugador: jugadorActual,
+        correctas: respuestasCorrectas,
+        total: totalPreguntas
+      })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Error al enviar resultados.");
+      return response.text();
+    })
+    .then(() => {
+      // Mostrar tabla local
+      cargarResultadosDesdeSheet(); // <- nueva función
+      document.getElementById('juego-container').style.display = 'none';
+      document.getElementById('resultados-container').style.display = 'block';
+    })
+    .catch(error => {
+      alert("Error al guardar en la hoja de cálculo: " + error.message);
+    });
+  }
+
+  function cargarResultadosDesdeSheet() {
+    fetch(scriptURL)
+      .then(res => res.json())
+      .then(data => {
+        const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
+        tabla.innerHTML = ''; // Limpia contenido anterior
+        data.forEach(fila => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.total}</td>`;
+          tabla.appendChild(tr);
+        });
+      })
+      .catch(error => {
+        console.error("Error al cargar resultados:", error);
+      });
+  }
+</script>
+
 </body>
 </html>
