@@ -323,36 +323,28 @@
     }
   </script>
   <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKjwsb_lT80-h2_SXb3fxARKvyH3huqvTEpNYyX_b4sYXqjUe5-KB_iGBAxyw0KRzfCg/exec'; // <-- TU URL AQUÍ
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // <-- TU URL AQUÍ
 
   function finalizarJuego() {
     clearInterval(intervalo);
 
-    fetch(scriptURL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        jugador: jugadorActual,
-        correctas: respuestasCorrectas,
-        incorrectas: totalPreguntas - respuestasCorrectas,
-        total: totalPreguntas
-      })
-    })
-    .then(response => {
-      if (!response.ok) throw new Error("Error al enviar resultados.");
-      return response.json();
-    })
-    .then(() => {
-      cargarResultadosDesdeSheet(); // Muestra todos los resultados desde la hoja
-      document.getElementById('juego-container').style.display = 'none';
-      document.getElementById('resultados-container').style.display = 'block';
-    })
-    .catch(error => {
-      alert("Error al guardar en la hoja de cálculo: " + error.message);
-    });
-  }
+fetch(scriptURL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json' // Especifica que los datos son JSON
+  },
+  body: JSON.stringify({
+    jugador: jugadorActual,
+    correctas: respuestasCorrectas,
+    incorrectas: totalPreguntas - respuestasCorrectas,
+    total: totalPreguntas
+  })
+})
+.then(response => response.json())  // Asegúrate de manejar la respuesta correctamente
+.catch(error => {
+  alert("Error al guardar en la hoja de cálculo: " + error.message);
+});
+
 
   function cargarResultadosDesdeSheet() {
     fetch(scriptURL)
