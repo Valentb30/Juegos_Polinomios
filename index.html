@@ -322,7 +322,7 @@
     clearInterval(intervalo);
 
     // Enviar los datos con fetch (POST)
-    fetch('https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec', {
+    fetch(scriptURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded' // Cambié el tipo de contenido a 'x-www-form-urlencoded'
