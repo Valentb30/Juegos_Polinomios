@@ -313,47 +313,54 @@ th {
       document.getElementById('login-container').style.display = 'block';  
       document.getElementById('resultados-container').style.display = 'none';  
     }  
-  </script>    <script>  
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // <-- TU URL AQUÍ  
+  </script>    
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // <-- TU URL AQUÍ
   
   function finalizarJuego() {  
-    clearInterval(intervalo);  
+    clearInterval(intervalo); // Suponiendo que 'intervalo' está definido en otro lugar
   
-fetch(scriptURL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json' // Asegúrate de que los datos sean JSON
-  },
-  body: JSON.stringify({
-    jugador: jugadorActual,
-    correctas: respuestasCorrectas,
-    incorrectas: totalPreguntas - respuestasCorrectas,
-    total: totalPreguntas
-  })
-})
-.then(response => response.json()) // Asegúrate de manejar la respuesta correctamente
-.catch(error => {
-  alert("Error al guardar en la hoja de cálculo: " + error.message);
-});
-  
-  
+    // Enviar los datos con fetch (POST)
+    fetch(scriptURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' // Asegúrate de que los datos sean JSON
+      },
+      body: JSON.stringify({
+        jugador: jugadorActual,
+        correctas: respuestasCorrectas,
+        incorrectas: totalPreguntas - respuestasCorrectas,
+        total: totalPreguntas
+      })
+    })
+    .then(response => response.json()) // Asegúrate de manejar la respuesta correctamente
+    .then(data => {
+      console.log("Resultado guardado exitosamente:", data);
+    })
+    .catch(error => {
+      alert("Error al guardar en la hoja de cálculo: " + error.message);
+    });
+  }
+
+  // Función para cargar los resultados desde la hoja de cálculo
   function cargarResultadosDesdeSheet() {  
-    fetch(scriptURL)  
-      .then(res => res.json())  
+    fetch(scriptURL)
+      .then(res => res.json()) // Aquí obtenemos la respuesta en JSON
       .then(data => {  
         const tabla = document.getElementById('tabla-resultados').querySelector('tbody');  
-        tabla.innerHTML = '';  
+        tabla.innerHTML = '';  // Limpiar la tabla antes de agregar nuevos resultados
   
         data.forEach(fila => {  
-          const tr = document.createElement('tr');  
-          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;  
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;
           tabla.appendChild(tr);  
         });  
       })  
       .catch(error => {  
         console.error("Error al cargar resultados:", error);  
-      });  
-  }}
-</script>  
+      });
+  }
+</script>
+
 </body>  
 </html>
