@@ -325,43 +325,35 @@
       document.getElementById('username').value = '';
     }
   </script>
-    <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // URL del script de Google Apps
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // Cambia con la URL correcta de tu script
 
-    // Cargar los resultados desde Google Sheets
-    function cargarResultados() {
-      fetch(scriptURL)
-        .then(res => res.json())  // Obtenemos los datos en formato JSON
-        .then(data => {
-          const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-          tabla.innerHTML = '';  // Limpiamos la tabla antes de agregar los nuevos resultados
+  function finalizarJuego() {
+    clearInterval(intervalo);
 
-          data.forEach(fila => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;
-            tabla.appendChild(tr);
-          });
-        })
-        .catch(error => {
-          console.error("Error al cargar resultados:", error);
-        });
-    }
-
-    // Llamar a la función cargarResultados cuando se muestre la página de resultados
-    function finalizarJuego() {
-      cargarResultados();  // Cargar resultados al finalizar el juego
-      document.getElementById('juego-container').style.display = 'none';
-      document.getElementById('resultados-container').style.display = 'block';
-    }
-
-    function reiniciarJuego() {
-      document.getElementById('username').value = '';
-      document.getElementById('login-container').style.display = 'block';
-      document.getElementById('resultados-container').style.display = 'none';
-    }
-
-    // Funciones adicionales como iniciarJuego, generarPregunta, etc. irían aquí.
-  </script>
+    // Enviar los datos con fetch (POST)
+    fetch(scriptURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' // Asegúrate de que los datos sean JSON
+      },
+      body: JSON.stringify({
+        jugador: jugadorActual,
+        correctas: respuestasCorrectas,
+        incorrectas: totalPreguntas - respuestasCorrectas,
+        total: totalPreguntas
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("Resultado guardado exitosamente:", data);
+    })
+    .catch(error => {
+      console.error("Error al guardar en la hoja de cálculo:", error);
+      alert("Error al guardar los resultados. Intenta de nuevo más tarde.");
+    });
+  }
+</script>
 
 </body>
 </html>
