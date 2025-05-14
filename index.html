@@ -1,157 +1,166 @@
 <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Polinomios</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #eef2f3, #8e9eab);
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
 
-<html lang="es">  
-<head>  
-  <meta charset="UTF-8">  
-  <title>Juego de Polinomios</title>  
-  <style>  
-    body {  
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-      background: linear-gradient(to right, #eef2f3, #8e9eab);  
-      margin: 0;  
-      padding: 40px;  
-      display: flex;  
-      justify-content: center;  
-      align-items: center;  
-      min-height: 100vh;  
-      flex-direction: column;  
-    }  .container {  
-  background-color: #ffffff;  
-  padding: 30px 40px;  
-  border-radius: 15px;  
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);  
-  max-width: 600px;  
-  width: 100%;  
-  margin-bottom: 20px;  
-}  
+    .container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
 
-h2 {  
-  text-align: center;  
-  color: #333;  
-  margin-bottom: 15px;  
-}  
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 15px;
+    }
 
-#timer, #jugador-nombre {  
-  text-align: center;  
-  font-size: 1.2rem;  
-  color: #555;  
-  margin-bottom: 10px;  
-}  
+    #timer, #jugador-nombre {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 10px;
+    }
 
-#pregunta {  
-  font-size: 1.2rem;  
-  font-weight: bold;  
-  margin-bottom: 20px;  
-  color: #444;  
-}  
+    #pregunta {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #444;
+    }
 
-.opcion {  
-  background-color: #f8f9fa;  
-  border: 2px solid #dee2e6;  
-  border-radius: 10px;  
-  padding: 12px;  
-  margin-bottom: 15px;  
-  cursor: pointer;  
-  transition: all 0.3s ease;  
-  font-size: 1rem;  
-}  
+    .opcion {
+      background-color: #f8f9fa;
+      border: 2px solid #dee2e6;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
 
-.opcion:hover {  
-  background-color: #e2e6ea;  
-}  
+    .opcion:hover {
+      background-color: #e2e6ea;
+    }
 
-.correcta {  
-  background-color: #d4edda !important;  
-  border-color: #28a745;  
-  color: #155724;  
-}  
+    .correcta {
+      background-color: #d4edda !important;
+      border-color: #28a745;
+      color: #155724;
+    }
 
-.incorrecta {  
-  background-color: #f8d7da !important;  
-  border-color: #dc3545;  
-  color: #721c24;  
-}  
+    .incorrecta {
+      background-color: #f8d7da !important;
+      border-color: #dc3545;
+      color: #721c24;
+    }
 
-button {  
-  display: block;  
-  width: 100%;  
-  padding: 12px;  
-  margin-top: 20px;  
-  font-size: 1rem;  
-  background-color: #007bff;  
-  color: white;  
-  border: none;  
-  border-radius: 8px;  
-  cursor: pointer;  
-  transition: background 0.3s ease;  
-}  
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
 
-button:hover {  
-  background-color: #0056b3;  
-}  
+    button:hover {
+      background-color: #0056b3;
+    }
 
-#finalizar {  
-  display: none;  
-  background-color: #28a745;  
-}  
+    #finalizar {
+      display: none;
+      background-color: #28a745;
+    }
 
-#login-container input {  
-  width: 100%;  
-  padding: 10px;  
-  margin: 15px 0;  
-  font-size: 1rem;  
-}  
+    #login-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      font-size: 1rem;
+    }
 
-table {  
-  width: 100%;  
-  border-collapse: collapse;  
-}  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-th, td {  
-  border: 1px solid #ccc;  
-  padding: 10px;  
-}  
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
 
-th {  
-  background-color: #f0f0f0;  
-}
+    th {
+      background-color: #f0f0f0;
+    }
 
-  </style>  
-</head>  
-<body>    <div class="container" id="login-container">  
-    <h2>Bienvenido al Juego de Polinomios</h2>  
-    <input type="text" id="username" placeholder="Ingresa tu nombre">  
-    <button onclick="iniciarJuego()">Iniciar Juego</button>  
-  </div>    <div class="container" id="juego-container" style="display:none;">  
-    <h2>Juego de Polinomios</h2>  
-    <div id="jugador-nombre"></div>  
-    <div id="timer">Tiempo: 2:00</div>  
-    <div id="pregunta"></div>  
-    <div id="opciones"></div>  
-    <button id="siguiente" onclick="generarPregunta()" style="display:none;">Siguiente Pregunta</button>  
-    <button id="finalizar" onclick="finalizarJuego()">Finalizar Juego</button>  
-  </div>    <div class="container" id="resultados-container" style="display:none;">  
-    <h2>Resultados del Juego</h2>  
-    <table id="tabla-resultados">  
-      <thead>  
-        <tr>  
-          <th>Jugador</th>  
-          <th>Correctas</th>  
-          <th>Total</th>  
-        </tr>  
-      </thead>  
-      <tbody></tbody>  
-    </table>  
-    <button onclick="reiniciarJuego()">Jugar de nuevo</button>  
-  </div>    <script>  
-    let jugadorActual = '';  
-    let tiempoRestante = 120;  
-    let intervalo;  
-    let respuestaRespondida = false;  
-    let respuestasCorrectas = 0;  
-    let preguntasRespondidas = 0;  
-    const totalPreguntas = 5;  
-  
+  </style>
+</head>
+<body>
+
+  <div class="container" id="login-container">
+    <h2>Bienvenido al Juego de Polinomios</h2>
+    <input type="text" id="username" placeholder="Ingresa tu nombre">
+    <button onclick="iniciarJuego()">Iniciar Juego</button>
+  </div>
+
+  <div class="container" id="juego-container" style="display:none;">
+    <h2>Juego de Polinomios</h2>
+    <div id="jugador-nombre"></div>
+    <div id="timer">Tiempo: 2:00</div>
+    <div id="pregunta"></div>
+    <div id="opciones"></div>
+    <button id="siguiente" onclick="generarPregunta()" style="display:none;">Siguiente Pregunta</button>
+    <button id="finalizar" onclick="finalizarJuego()">Finalizar Juego</button>
+  </div>
+
+  <div class="container" id="resultados-container" style="display:none;">
+    <h2>Resultados del Juego</h2>
+    <table id="tabla-resultados">
+      <thead>
+        <tr>
+          <th>Jugador</th>
+          <th>Correctas</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="reiniciarJuego()">Jugar de nuevo</button>
+  </div>
+
+  <script>
+    let jugadorActual = '';
+    let tiempoRestante = 120;
+    let intervalo;
+    let respuestaRespondida = false;
+    let respuestasCorrectas = 0;
+    let preguntasRespondidas = 0;
+    const totalPreguntas = 5;
+
     function iniciarJuego() {  
       const nombre = document.getElementById('username').value.trim();  
       if (nombre === '') {  
@@ -164,8 +173,7 @@ th {
       document.getElementById('juego-container').style.display = 'block';  
       generarPregunta();  
     }  
-  
-    function iniciarTemporizador() {  
+        function iniciarTemporizador() {  
       clearInterval(intervalo);  
       tiempoRestante = 120;  
       const timer = document.getElementById('timer');  
@@ -185,7 +193,7 @@ th {
         }  
       }, 1000);  
     }  
-  
+
     function generarTrinomio() {  
       let x1 = Math.floor(Math.random() * 10) - 5;  
       let x2 = Math.floor(Math.random() * 10) - 5;  
@@ -199,7 +207,7 @@ th {
     function generarPolinomio(grado = 2) {  
       return Array.from({ length: grado + 1 }, () => Math.floor(Math.random() * 11) - 5);  
     }  
-  
+
     function polinomioToStr(coefs) {  
       return coefs.map((c, i) => {  
         const exp = coefs.length - 1 - i;  
@@ -211,8 +219,7 @@ th {
         return term;  
       }).filter(Boolean).join(' + ').replace(/\+\s-\s/g, '- ');  
     }  
-  
-    function operarPolinomios(p1, p2, operacion) {  
+     function operarPolinomios(p1, p2, operacion) {  
       const maxLen = Math.max(p1.length, p2.length);  
       const a = Array(maxLen - p1.length).fill(0).concat(p1);  
       const b = Array(maxLen - p2.length).fill(0).concat(p2);  
@@ -295,65 +302,26 @@ th {
       });  
     }  
   
-    function finalizarJuego() {  
-      clearInterval(intervalo);  
-      const tabla = document.getElementById('tabla-resultados').querySelector('tbody');  
-      const fila = document.createElement('tr');  
-      fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;  
-      tabla.appendChild(fila);  
-      document.getElementById('juego-container').style.display = 'none';  
-      document.getElementById('resultados-container').style.display = 'block';  
-    }  
-  
-    function reiniciarJuego() {  
-      jugadorActual = '';  
-      respuestasCorrectas = 0;  
-      preguntasRespondidas = 0;  
-      document.getElementById('username').value = '';  
-      document.getElementById('login-container').style.display = 'block';  
-      document.getElementById('resultados-container').style.display = 'none';  
-    }  
-  </script>    <script>  
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; // <-- TU URL AQUÍ  
-  
-  function finalizarJuego() {  
-    clearInterval(intervalo);  
-  
-fetch(scriptURL, {  
-  method: 'POST',  
-  headers: {  
-    'Content-Type': 'application/json' // Especifica que los datos son JSON  
-  },  
-  body: JSON.stringify({  
-    jugador: jugadorActual,  
-    correctas: respuestasCorrectas,  
-    incorrectas: totalPreguntas - respuestasCorrectas,  
-    total: totalPreguntas  
-  })  
-})  
-.then(response => response.json())  // Asegúrate de manejar la respuesta correctamente  
-.catch(error => {  
-  alert("Error al guardar en la hoja de cálculo: " + error.message);  
-});  
-  
-  
-  function cargarResultadosDesdeSheet() {  
-    fetch(scriptURL)  
-      .then(res => res.json())  
-      .then(data => {  
-        const tabla = document.getElementById('tabla-resultados').querySelector('tbody');  
-        tabla.innerHTML = '';  
-  
-        data.forEach(fila => {  
-          const tr = document.createElement('tr');  
-          tr.innerHTML = `<td>${fila.jugador}</td><td>${fila.correctas}</td><td>${fila.incorrectas}</td><td>${fila.total}</td>`;  
-          tabla.appendChild(tr);  
-        });  
-      })  
-      .catch(error => {  
-        console.error("Error al cargar resultados:", error);  
-      });  
-  }}
-</script>  
-</body>  
+
+    function finalizarJuego() {
+      clearInterval(intervalo);
+      const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
+      const fila = document.createElement('tr');
+      fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
+      tabla.appendChild(fila);
+      document.getElementById('juego-container').style.display = 'none';
+      document.getElementById('resultados-container').style.display = 'block';
+    }
+
+    function reiniciarJuego() {
+      jugadorActual = '';
+      respuestasCorrectas = 0;
+      preguntasRespondidas = 0;
+      document.getElementById('username').value = '';
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('resultados-container').style.display = 'none';
+    }
+  </script>
+
+</body>
 </html>
