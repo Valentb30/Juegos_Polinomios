@@ -307,16 +307,6 @@
       });
     }
 
-    function finalizarJuego() {
-      document.getElementById('juego-container').style.display = 'none';
-      document.getElementById('resultados-container').style.display = 'block';
-      const tablaResultados = document.getElementById('tabla-resultados').getElementsByTagName('tbody')[0];
-      const nuevaFila = tablaResultados.insertRow();
-      nuevaFila.insertCell(0).textContent = jugadorActual;
-      nuevaFila.insertCell(1).textContent = respuestasCorrectas;
-      nuevaFila.insertCell(2).textContent = totalPreguntas;
-    }
-
     function reiniciarJuego() {
       preguntasRespondidas = 0;
       respuestasCorrectas = 0;
@@ -335,18 +325,19 @@
     fetch(scriptURL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json' // Asegúrate de que los datos sean JSON
+        'Content-Type': 'application/x-www-form-urlencoded' // Cambié el tipo de contenido a 'x-www-form-urlencoded'
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
         jugador: jugadorActual,
         correctas: respuestasCorrectas,
         incorrectas: totalPreguntas - respuestasCorrectas,
         total: totalPreguntas
       })
     })
-    .then(response => response.json())
+    .then(response => response.text())  // Usamos text() porque el servidor espera texto, no JSON
     .then(data => {
       console.log("Resultado guardado exitosamente:", data);
+      alert("Resultado guardado correctamente.");
     })
     .catch(error => {
       console.error("Error al guardar en la hoja de cálculo:", error);
@@ -354,6 +345,7 @@
     });
   }
 </script>
+
 
 </body>
 </html>
