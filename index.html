@@ -319,22 +319,22 @@ th {
   function finalizarJuego() {  
     clearInterval(intervalo);  
   
-fetch(scriptURL, {  
-  method: 'POST',  
-  headers: {  
-    'Content-Type': 'application/json' // Especifica que los datos son JSON  
-  },  
-  body: JSON.stringify({  
-    jugador: jugadorActual,  
-    correctas: respuestasCorrectas,  
-    incorrectas: totalPreguntas - respuestasCorrectas,  
-    total: totalPreguntas  
-  })  
-})  
-.then(response => response.json())  // Asegúrate de manejar la respuesta correctamente  
-.catch(error => {  
-  alert("Error al guardar en la hoja de cálculo: " + error.message);  
-});  
+fetch(scriptURL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    jugador: jugadorActual,
+    correctas: respuestasCorrectas,
+    incorrectas: totalPreguntas - respuestasCorrectas,
+    total: totalPreguntas
+  })
+})
+.then(response => response.json())
+.catch(error => {
+  alert("Error al guardar en la hoja de cálculo: " + error.message);
+});
   
   
   function cargarResultadosDesdeSheet() {  
