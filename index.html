@@ -152,15 +152,15 @@
     <button onclick="reiniciarJuego()">Jugar de nuevo</button>
   </div>
 
-  <script>
-    let jugadorActual = '';
-    let tiempoRestante = 120;
-    let intervalo;
-    let respuestaRespondida = false;
-    let respuestasCorrectas = 0;
-    let preguntasRespondidas = 0;
-    const totalPreguntas = 5;
-
+<script>
+        let jugadorActual = '';  
+    let tiempoRestante = 120;  
+    let intervalo;  
+    let respuestaRespondida = false;  
+    let respuestasCorrectas = 0;  
+    let preguntasRespondidas = 0;  
+    const totalPreguntas = 5;  
+  
     function iniciarJuego() {  
       const nombre = document.getElementById('username').value.trim();  
       if (nombre === '') {  
@@ -173,7 +173,8 @@
       document.getElementById('juego-container').style.display = 'block';  
       generarPregunta();  
     }  
-        function iniciarTemporizador() {  
+  
+    function iniciarTemporizador() {  
       clearInterval(intervalo);  
       tiempoRestante = 120;  
       const timer = document.getElementById('timer');  
@@ -193,7 +194,7 @@
         }  
       }, 1000);  
     }  
-
+  
     function generarTrinomio() {  
       let x1 = Math.floor(Math.random() * 10) - 5;  
       let x2 = Math.floor(Math.random() * 10) - 5;  
@@ -207,7 +208,7 @@
     function generarPolinomio(grado = 2) {  
       return Array.from({ length: grado + 1 }, () => Math.floor(Math.random() * 11) - 5);  
     }  
-
+  
     function polinomioToStr(coefs) {  
       return coefs.map((c, i) => {  
         const exp = coefs.length - 1 - i;  
@@ -219,7 +220,8 @@
         return term;  
       }).filter(Boolean).join(' + ').replace(/\+\s-\s/g, '- ');  
     }  
-     function operarPolinomios(p1, p2, operacion) {  
+  
+    function operarPolinomios(p1, p2, operacion) {  
       const maxLen = Math.max(p1.length, p2.length);  
       const a = Array(maxLen - p1.length).fill(0).concat(p1);  
       const b = Array(maxLen - p2.length).fill(0).concat(p2);  
@@ -301,17 +303,60 @@
         contenedor.appendChild(div);  
       });  
     }  
-  
 
-    function finalizarJuego() {
-      clearInterval(intervalo);
-      const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-      const fila = document.createElement('tr');
-      fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
-      tabla.appendChild(fila);
-      document.getElementById('juego-container').style.display = 'none';
-      document.getElementById('resultados-container').style.display = 'block';
+function finalizarJuego() {
+  // Verifica si el jugador ha completado todas las preguntas
+  if (preguntasRespondidas < totalPreguntas) {
+    alert("No has respondido todas las preguntas.");
+    return;
+  }
+
+  // Almacenar los datos para enviar
+  const data = {
+    jugador: jugadorActual,
+    correctas: respuestasCorrectas,
+    total: totalPreguntas
+  };
+
+  // URL de la API de Google Apps Script
+  const url = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec';
+
+  // Enviar los datos a Google Sheets a través de la API
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.result === 'success') {
+      console.log('Resultados guardados con éxito');
+    } else {
+      console.error('Error al guardar los resultados:', data.message);
     }
+  })
+  .catch(error => {
+    console.error('Error en la solicitud:', error);
+  });
+
+  // Mostrar los resultados en la interfaz de usuario
+  const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
+  const fila = document.createElement('tr');
+  fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
+  tabla.appendChild(fila);
+
+  // Cambiar pantallas
+  document.getElementById('juego-container').style.display = 'none';
+  document.getElementById('resultados-container').style.display = 'block';
+
+  // Deshabilitar el botón para evitar que se haga clic más de una vez
+  document.getElementById('finalizar').disabled = true;
+}
+
+
+
 
     function reiniciarJuego() {
       jugadorActual = '';
@@ -321,7 +366,8 @@
       document.getElementById('login-container').style.display = 'block';
       document.getElementById('resultados-container').style.display = 'none';
     }
-  </script>
+</script>
+
 
 </body>
 </html>
