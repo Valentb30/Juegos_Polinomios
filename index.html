@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juego de Polinomios</title>
   <style>
     body {
@@ -15,7 +16,6 @@
       min-height: 100vh;
       flex-direction: column;
     }
-
     .container {
       background-color: #ffffff;
       padding: 30px 40px;
@@ -160,6 +160,8 @@
     let preguntasRespondidas = 0;
     const totalPreguntas = 5;
 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec'; 
+
     function iniciarJuego() {
       const nombre = document.getElementById('username').value.trim();
       if (nombre === '') {
@@ -194,18 +196,84 @@
       }, 1000);
     }
 
+    function generarTrinomio() {
+      let x1 = Math.floor(Math.random() * 10) - 5;
+      let x2 = Math.floor(Math.random() * 10) - 5;
+      const b = -(x1 + x2);
+      const c = x1 * x2;
+      const expresion = `x² ${b >= 0 ? '+ ' + b : '- ' + (-b)}x ${c >= 0 ? '+ ' + c : '- ' + (-c)}`;
+      const factorizacion = `(x ${x1 >= 0 ? '- ' + x1 : '+ ' + (-x1)})(x ${x2 >= 0 ? '- ' + x2 : '+ ' + (-x2)})`;
+      return { tipo: "Factoriza", expresion, correcta: factorizacion };
+    }
+
+    function generarPolinomio(grado = 2) {
+      return Array.from({ length: grado + 1 }, () => Math.floor(Math.random() * 11) - 5);
+    }
+
+    function polinomioToStr(coefs) {
+      return coefs.map((c, i) => {
+        const exp = coefs.length - 1 - i;
+        if (c === 0) return '';
+        let term = '';
+        if (exp === 0) term = `${c}`;
+        else if (exp === 1) term = `${c === 1 ? '' : c === -1 ? '-' : c}x`;
+        else term = `${c === 1 ? '' : c === -1 ? '-' : c}x^${exp}`;
+        return term;
+      }).filter(Boolean).join(' + ').replace(/\+\s-\s/g, '- ');
+    }
+
+    function operarPolinomios(p1, p2, operacion) {
+      const maxLen = Math.max(p1.length, p2.length);
+      const a = Array(maxLen - p1.length).fill(0).concat(p1);
+      const b = Array(maxLen - p2.length).fill(0).concat(p2);
+      if (operacion === 'Suma') return a.map((v, i) => v + b[i]);
+      if (operacion === 'Resta') return a.map((v, i) => v - b[i]);
+      if (operacion === 'Multiplicación') {
+        const result = Array(p1.length + p2.length - 1).fill(0);
+        for (let i = 0; i < p1.length; i++) {
+          for (let j = 0; j < p2.length; j++) {
+            result[i + j] += p1[i] * p2[j];
+          }
+        }
+        return result;
+      }
+    }
+
+    function generarOperacion() {
+      const p1 = generarPolinomio();
+      const p2 = generarPolinomio();
+      const tipo = ['Suma', 'Resta', 'Multiplicación'][Math.floor(Math.random() * 3)];
+      const correcta = operarPolinomios(p1, p2, tipo);
+      return {
+        tipo,
+        expresion: `${polinomioToStr(p1)} ${tipo === 'Suma' ? '+' : tipo === 'Resta' ? '-' : '×'} ${polinomioToStr(p2)}`,
+        correcta: polinomioToStr(correcta)
+      };
+    }
+
+    function generarDistractores(correcta) {
+      const distractores = new Set();
+      while (distractores.size < 2) {
+        const ruido = correcta.replace(/\d+/g, m => `${parseInt(m) + Math.floor(Math.random() * 5 - 2)}`);
+        if (ruido !== correcta) distractores.add(ruido);
+      }
+      return Array.from(distractores);
+    }
+
     function generarPregunta() {
       respuestaRespondida = false;
       clearInterval(intervalo);
       iniciarTemporizador();
 
-      if (preguntasRespondidas >= totalPreguntas) return;
+      if (preguntasRespondidas >= totalPreguntas) {
+        return finalizarJuego();
+      }
 
       const tipoDePregunta = Math.random() < 0.5 ? generarTrinomio() : generarOperacion();
       const distractores = generarDistractores(tipoDePregunta.correcta);
       const opciones = [tipoDePregunta.correcta, ...distractores].sort(() => Math.random() - 0.5);
 
-      document.getElementById('pregunta').innerHTML = `${tipoDePregunta.tipo}: ${tipoDePregunta.expresion}`;
+      document.getElementById('pregunta').innerHTML = `<strong>${tipoDePregunta.tipo}:</strong> ${tipoDePregunta.expresion}`;
       const contenedor = document.getElementById('opciones');
       contenedor.innerHTML = '';
 
@@ -240,45 +308,23 @@
     }
 
     function finalizarJuego() {
-      clearInterval(intervalo);
-      const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-      const fila = document.createElement('tr');
-      fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
-      tabla.appendChild(fila);
-
-      // Enviar los resultados al servidor de Google Apps Script
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec';
-      fetch(scriptURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jugador: jugadorActual,
-          correctas: respuestasCorrectas,
-          incorrectas: totalPreguntas - respuestasCorrectas,
-          total: totalPreguntas
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("Resultado guardado exitosamente:", data);
-      })
-      .catch(error => {
-        console.error("Error al guardar en la hoja de cálculo:", error);
-        alert("Error al guardar los resultados. Intenta de nuevo más tarde.");
-      });
-
       document.getElementById('juego-container').style.display = 'none';
       document.getElementById('resultados-container').style.display = 'block';
+      const tablaResultados = document.getElementById('tabla-resultados').getElementsByTagName('tbody')[0];
+      const nuevaFila = tablaResultados.insertRow();
+      nuevaFila.insertCell(0).textContent = jugadorActual;
+      nuevaFila.insertCell(1).textContent = respuestasCorrectas;
+      nuevaFila.insertCell(2).textContent = totalPreguntas;
     }
 
     function reiniciarJuego() {
-      jugadorActual = '';
-      respuestasCorrectas = 0;
       preguntasRespondidas = 0;
-      document.getElementById('username').value = '';
-      document.getElementById('login-container').style.display = 'block';
+      respuestasCorrectas = 0;
       document.getElementById('resultados-container').style.display = 'none';
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('username').value = '';
     }
   </script>
+
 </body>
 </html>
