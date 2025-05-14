@@ -322,7 +322,7 @@ th {
 fetch(scriptURL, {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json' // Asegúrate de que los datos sean JSON
   },
   body: JSON.stringify({
     jugador: jugadorActual,
@@ -331,7 +331,7 @@ fetch(scriptURL, {
     total: totalPreguntas
   })
 })
-.then(response => response.json())
+.then(response => response.json()) // Asegúrate de manejar la respuesta correctamente
 .catch(error => {
   alert("Error al guardar en la hoja de cálculo: " + error.message);
 });
