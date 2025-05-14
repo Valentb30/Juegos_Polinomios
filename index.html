@@ -140,6 +140,41 @@
     let preguntasRespondidas = 0;  
     const totalPreguntas = 5;
 
+    const preguntas = [
+      {
+        pregunta: "¿Cuál es el grado del polinomio 3x² + 2x - 5?",
+        opciones: ["1", "2", "3", "0"],
+        respuesta: "2"
+      },
+      {
+        pregunta: "¿Cuál es el coeficiente principal de 4x³ - x + 7?",
+        opciones: ["-1", "4", "7", "3"],
+        respuesta: "4"
+      },
+      {
+        pregunta: "¿Qué es un monomio?",
+        opciones: [
+          "Un polinomio de grado 2",
+          "Una expresión con una sola variable",
+          "Una expresión con un solo término",
+          "Una suma de polinomios"
+        ],
+        respuesta: "Una expresión con un solo término"
+      },
+      {
+        pregunta: "¿Cuál es el resultado de sumar (2x + 3) + (4x - 1)?",
+        opciones: ["6x + 2", "6x + 4", "2x + 2", "4x + 2"],
+        respuesta: "6x + 2"
+      },
+      {
+        pregunta: "¿Qué término tiene mayor grado en 7x^4 + 5x² - 3?",
+        opciones: ["5x²", "7x^4", "-3", "x"],
+        respuesta: "7x^4"
+      }
+    ];
+
+    let preguntasDisponibles = [...preguntas];
+
     function iniciarJuego() {
       const nombre = document.getElementById('username').value.trim();
       if (nombre === '') {
@@ -150,6 +185,7 @@
       document.getElementById('jugador-nombre').textContent = `Jugador: ${jugadorActual}`;
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('juego-container').style.display = 'block';
+      preguntasDisponibles = [...preguntas].sort(() => Math.random() - 0.5); // aleatorizar
       generarPregunta();
     }
 
@@ -173,12 +209,47 @@
       }, 1000);
     }
 
-    // Resto del código (funciones de generar preguntas y resultados)
-    // ... mantener igual
+    function generarPregunta() {
+      if (preguntasRespondidas >= totalPreguntas || preguntasDisponibles.length === 0) {
+        finalizarJuego();
+        return;
+      }
+      iniciarTemporizador();
+      const preguntaActual = preguntasDisponibles[preguntasRespondidas];
+      const contenedorPregunta = document.getElementById("pregunta");
+      const contenedorOpciones = document.getElementById("opciones");
+
+      contenedorPregunta.textContent = preguntaActual.pregunta;
+      contenedorOpciones.innerHTML = "";
+
+      preguntaActual.opciones.forEach(opcion => {
+        const div = document.createElement("div");
+        div.textContent = opcion;
+        div.className = "opcion";
+        div.onclick = () => {
+          respuestaRespondida = true;
+          if (opcion === preguntaActual.respuesta) {
+            div.classList.add("correcta");
+            respuestasCorrectas++;
+          } else {
+            div.classList.add("incorrecta");
+          }
+          preguntasRespondidas++;
+          document.getElementById("siguiente").style.display = "block";
+          if (preguntasRespondidas === totalPreguntas) {
+            document.getElementById("siguiente").style.display = "none";
+            document.getElementById("finalizar").style.display = "block";
+          }
+        };
+        contenedorOpciones.appendChild(div);
+      });
+
+      respuestaRespondida = false;
+      document.getElementById("siguiente").style.display = "none";
+    }
 
     function finalizarJuego() {
       clearInterval(intervalo);
-
       const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
       const fila = document.createElement('tr');
       fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
