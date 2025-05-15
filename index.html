@@ -90,7 +90,7 @@
 <body>
   <div class="container" id="login-container">
     <h2>Bienvenido al Juego de Polinomios</h2>
-    <input type="text" id="username" placeholder="Ingresa tu nombre" style="width:100%; padding:10px; margin:15px 0; font-size:1rem;" />
+    <input type="text" id="username" placeholder="Ingresa tu nombre" style="width:95%; padding:10px; margin:0 0; font-size:1rem;" />
     <button onclick="iniciarJuego()">Iniciar Juego</button>
   </div>
 
@@ -169,19 +169,27 @@
       });
       document.getElementById("siguiente").style.display = "none";
       document.getElementById("finalizar").style.display = "none";
+
+      iniciarTemporizador(120); // Reiniciar temporizador a 2 minutos por pregunta
     }
 
     function seleccionarOpcion(el, correcto) {
+      clearInterval(temporizadorId); // Detener temporizador al responder
       document.querySelectorAll(".opcion").forEach(op => op.onclick = null);
-      if (correcto) { el.classList.add("correcta"); puntaje++; }
-      else {
+      if (correcto) {
+        el.classList.add("correcta");
+        puntaje++;
+      } else {
         el.classList.add("incorrecta");
         document.querySelectorAll(".opcion").forEach(op => {
           if (op.textContent === preguntasSeleccionadas[indicePregunta].correcta) op.classList.add("correcta");
         });
       }
-      if (indicePregunta < preguntasSeleccionadas.length - 1) document.getElementById("siguiente").style.display = "block";
-      else document.getElementById("finalizar").style.display = "block";
+      if (indicePregunta < preguntasSeleccionadas.length - 1) {
+        document.getElementById("siguiente").style.display = "block";
+      } else {
+        document.getElementById("finalizar").style.display = "block";
+      }
     }
 
     window.siguientePregunta = function() {
