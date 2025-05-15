@@ -235,10 +235,12 @@
       }
     ];
 
-        let jugador = "";
+       let jugador = "";
     let preguntasSeleccionadas = [];
     let indicePregunta = 0;
     let puntaje = 0;
+    let tiempoRestante = 120;
+    let temporizadorId;
 
     function iniciarJuego() {
       jugador = document.getElementById("username").value.trim();
@@ -246,7 +248,7 @@
         alert("Por favor ingresa tu nombre.");
         return;
       }
-      // Elegir 5 preguntas aleatorias sin repetición
+
       preguntasSeleccionadas = [];
       const indices = [];
       while (indices.length < 5) {
@@ -274,7 +276,6 @@
       opcionesDiv.innerHTML = "";
 
       const opciones = [pregunta.correcta, ...pregunta.distractores];
-      // Mezclar opciones
       for (let i = opciones.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [opciones[i], opciones[j]] = [opciones[j], opciones[i]];
@@ -294,21 +295,20 @@
 
     function seleccionarOpcion(elemento, esCorrecta) {
       const opciones = document.querySelectorAll(".opcion");
-      opciones.forEach(op => op.onclick = null); // Desactivar más clicks
+      opciones.forEach(op => op.onclick = null);
 
       if (esCorrecta) {
         elemento.classList.add("correcta");
         puntaje++;
       } else {
         elemento.classList.add("incorrecta");
-        // Resaltar la correcta también
         opciones.forEach(op => {
           if (op.textContent === preguntasSeleccionadas[indicePregunta].correcta) {
             op.classList.add("correcta");
           }
         });
       }
-      // Mostrar botón siguiente o finalizar
+
       if (indicePregunta < preguntasSeleccionadas.length - 1) {
         document.getElementById("siguiente").style.display = "block";
       } else {
@@ -321,52 +321,26 @@
       mostrarPregunta();
     }
 
-    async function finalizarJuego() {
-  clearInterval(temporizadorId);
-  document.getElementById("juego-container").style.display = "none";
+    function finalizarJuego() {
+      clearInterval(temporizadorId);
+      document.getElementById("juego-container").style.display = "none";
+      mostrarResultados();
+    }
 
-  let mensajeEnvio = "";
-
-  try {
-    const response = await fetch('https://script.google.com/macros/s/AKfycbz2-oh8CD14P_wfl_XE1UavpRkhBJAXWWBb6SZ4t5f_bcTJGesSGJXHaO85VZjTRbj3FA/exec', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jugador: jugador,
-        puntaje: puntaje,
-        total: preguntasSeleccionadas.length,
-        fecha: new Date().toISOString()
-      })
-    });
-    const data = await response.json();
-    console.log('Respuesta de Apps Script:', data);
-    mensajeEnvio = "Resultados enviados correctamente.";
-  } catch (error) {
-    console.error('Error enviando resultados:', error);
-    mensajeEnvio = "Error al enviar resultados.";
-  }
-
-  mostrarResultados();
-
-  // Mostrar mensaje en el contenedor de resultados
-  const contenedor = document.getElementById("resultados-container");
-  let mensajeDiv = document.createElement("div");
-  mensajeDiv.textContent = mensajeEnvio;
-  mensajeDiv.style.marginTop = "10px";
-  mensajeDiv.style.fontWeight = "bold";
-  mensajeDiv.style.color = mensajeEnvio.includes("Error") ? "red" : "green";
-  contenedor.appendChild(mensajeDiv);
-}
+    function mostrarResultados() {
+      document.getElementById("resultados-container").style.display = "block";
+      const tbody = document.querySelector("#tabla-resultados tbody");
+      tbody.innerHTML = "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${jugador}</td><td>${puntaje}</td><td>${preguntasSeleccionadas.length}</td>`;
+      tbody.appendChild(tr);
+    }
 
     function reiniciarJuego() {
       document.getElementById("resultados-container").style.display = "none";
       document.getElementById("login-container").style.display = "block";
       document.getElementById("username").value = "";
     }
-
-    // Temporizador
-    let tiempoRestante = 120; // 2 minutos en segundos
-    let temporizadorId;
 
     function iniciarTemporizador(segundos) {
       tiempoRestante = segundos;
