@@ -90,7 +90,7 @@
 <body>
   <div class="container" id="login-container">
     <h2>Bienvenido al Juego de Polinomios</h2>
-    <input type="text" id="username" placeholder="Ingresa tu nombre" style="width:95%; padding:10px; margin:0 0; font-size:1rem;" />
+    <input type="text" id="username" placeholder="Ingresa tu nombre" style="width:95%; padding:10px; font-size:1rem;" />
     <button onclick="iniciarJuego()">Iniciar Juego</button>
   </div>
 
@@ -120,6 +120,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
+    // Configura tu Firebase aquí:
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
       authDomain: "TU_AUTH_DOMAIN",
@@ -132,20 +133,103 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const preguntas = [
-      { tipo: "Resta", expresion: "3x² + 4x - 2 - x² + x - 5", correcta: "2x² + 3x + 3", distractores: ["3x² + 4x + 2", "2x² + 2x + 4", "3x² + 2x + 4"] },
-      { tipo: "Suma", expresion: "x² - 2x + 3 + 2x² + 5x - 1", correcta: "3x² + 3x + 2", distractores: ["x² + 5x + 2", "2x² - 3x + 4", "3x² + 4x - 3"] },
-      { tipo: "Multiplicación", expresion: "(x + 2)(x - 3)", correcta: "x² - x - 6", distractores: ["x² + 5x + 6", "x² - 2x - 6", "x² + x - 6"] },
-      { tipo: "Factoriza", expresion: "x² + 5x + 6", correcta: "(x + 2)(x + 3)", distractores: ["(x - 2)(x + 3)", "(x + 1)(x + 6)", "(x + 3)(x + 4)"] }
-    ];
+    // Funciones para generar preguntas aleatorias de polinomios
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-    let jugador = "", preguntasSeleccionadas = [], indicePregunta = 0, puntaje = 0, tiempoRestante = 120, temporizadorId;
+    function generarSuma() {
+      const a1 = randomInt(1,5), b1 = randomInt(-5,5), c1 = randomInt(-5,5);
+      const a2 = randomInt(1,5), b2 = randomInt(-5,5), c2 = randomInt(-5,5);
+      const expresion = `${a1}x² ${b1>=0?"+":"-"} ${Math.abs(b1)}x ${c1>=0?"+":"-"} ${Math.abs(c1)} + ${a2}x² ${b2>=0?"+":"-"} ${Math.abs(b2)}x ${c2>=0?"+":"-"} ${Math.abs(c2)}`;
+      const correcta = `${a1+a2}x² ${b1+b2>=0?"+":"-"} ${Math.abs(b1+b2)}x ${c1+c2>=0?"+":"-"} ${Math.abs(c1+c2)}`;
+      return { tipo:"Suma", expresion, correcta };
+    }
+
+    function generarResta() {
+      const a1 = randomInt(1,5), b1 = randomInt(-5,5), c1 = randomInt(-5,5);
+      const a2 = randomInt(1,5), b2 = randomInt(-5,5), c2 = randomInt(-5,5);
+      const expresion = `${a1}x² ${b1>=0?"+":"-"} ${Math.abs(b1)}x ${c1>=0?"+":"-"} ${Math.abs(c1)} - ${a2}x² ${b2>=0?"+":"-"} ${Math.abs(b2)}x ${c2>=0?"+":"-"} ${Math.abs(c2)}`;
+      const correcta = `${a1 - a2}x² ${b1 - b2>=0?"+":"-"} ${Math.abs(b1 - b2)}x ${c1 - c2>=0?"+":"-"} ${Math.abs(c1 - c2)}`;
+      return { tipo:"Resta", expresion, correcta };
+    }
+
+    function generarMultiplicacion() {
+      // Multiplicar (ax + b)(cx + d) = acx² + (ad + bc)x + bd
+      const a = randomInt(1,5), b = randomInt(-5,5), c = randomInt(1,5), d = randomInt(-5,5);
+      const expresion = `(${a}x ${b>=0?"+":"-"} ${Math.abs(b)})(${c}x ${d>=0?"+":"-"} ${Math.abs(d)})`;
+      const ac = a*c;
+      const ad_bc = a*d + b*c;
+      const bd = b*d;
+      const correcta = `${ac}x² ${ad_bc>=0?"+":"-"} ${Math.abs(ad_bc)}x ${bd>=0?"+":"-"} ${Math.abs(bd)}`;
+      return { tipo:"Multiplicación", expresion, correcta };
+    }
+
+    function generarFactorizacion() {
+      // factorizar x² + (a+b)x + ab = (x+a)(x+b)
+      const a = randomInt(1,5);
+      const b = randomInt(1,5);
+      const expresion = `x² + ${a+b}x + ${a*b}`;
+      const correcta = `(x + ${a})(x + ${b})`;
+      // Distractores simples (pueden ser intercambiados o con signos cambiados)
+      const distractores = [
+        `(x - ${a})(x + ${b})`,
+        `(x + ${a})(x - ${b})`,
+        `(x + ${a+b})(x + 1)`
+      ];
+      return { tipo:"Factoriza", expresion, correcta, distractores };
+    }
+
+    function generarPreguntaAleatoria() {
+      const generadores = [generarSuma, generarResta, generarMultiplicacion, generarFactorizacion];
+      const gen = generadores[randomInt(0, generadores.length - 1)];
+      const pregunta = gen();
+
+      // Si no tiene distractores generados (solo factoriza los tiene), generar distractores básicos:
+      if (!pregunta.distractores) {
+        const opciones = new Set();
+        while (opciones.size < 3) {
+          // Para las otras, genera distractores simples modificando coeficientes al azar
+          let distractor;
+          if (pregunta.tipo === "Suma" || pregunta.tipo === "Resta" || pregunta.tipo === "Multiplicación") {
+            // Cambiar coeficientes ligeramente para distractores
+            const coeficientes = pregunta.correcta.match(/([+-]?\d+)x\^2|([+-]?\d+)x|([+-]?\d+)/g);
+            if (!coeficientes) break;
+            const nuevos = coeficientes.map(c => {
+              let num = parseInt(c.replace(/[^\d\-]/g, ''));
+              if (isNaN(num)) num = 1;
+              // Cambiar un poco el número al azar
+              num += randomInt(-2, 2);
+              if (num === 0) num = 1;
+              return num;
+            });
+            // Reconstruir expresión simple (asumiendo forma ax² + bx + c)
+            distractor = `${nuevos[0]}x² ${nuevos[1]>=0?"+":"-"} ${Math.abs(nuevos[1])}x ${nuevos[2]>=0?"+":"-"} ${Math.abs(nuevos[2])}`;
+          }
+          if (distractor && distractor !== pregunta.correcta) opciones.add(distractor);
+        }
+        pregunta.distractores = Array.from(opciones);
+      }
+
+      return pregunta;
+    }
+
+    let jugador = "";
+    let preguntasSeleccionadas = [];
+    let indicePregunta = 0;
+    let puntaje = 0;
+    let tiempoRestante = 120;
+    let temporizadorId;
 
     window.iniciarJuego = function() {
       jugador = document.getElementById("username").value.trim();
       if (!jugador) return alert("Ingresa tu nombre.");
-      preguntasSeleccionadas = preguntas.sort(() => 0.5 - Math.random()).slice(0, 5);
-      indicePregunta = 0; puntaje = 0;
+      preguntasSeleccionadas = [];
+      for(let i=0; i<5; i++) {
+        preguntasSeleccionadas.push(generarPreguntaAleatoria());
+      }
+      indicePregunta = 0;
+      puntaje = 0;
       document.getElementById("login-container").style.display = "none";
       document.getElementById("resultados-container").style.display = "none";
       document.getElementById("juego-container").style.display = "block";
@@ -170,11 +254,11 @@
       document.getElementById("siguiente").style.display = "none";
       document.getElementById("finalizar").style.display = "none";
 
-      iniciarTemporizador(120); // Reiniciar temporizador a 2 minutos por pregunta
+      iniciarTemporizador(120);
     }
 
     function seleccionarOpcion(el, correcto) {
-      clearInterval(temporizadorId); // Detener temporizador al responder
+      clearInterval(temporizadorId);
       document.querySelectorAll(".opcion").forEach(op => op.onclick = null);
       if (correcto) {
         el.classList.add("correcta");
@@ -217,14 +301,14 @@
       });
     }
 
-    window.reiniciarJugadores = async function reiniciarJugadores() {
+    window.reiniciarJugadores = async function() {
       if (confirm("¿Estás seguro que quieres eliminar todos los resultados?")) {
         const snapshot = await getDocs(collection(db, "resultados"));
         const batch = writeBatch(db);
         snapshot.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
         alert("Todos los jugadores han sido eliminados.");
-        mostrarResultados(); // refresca tabla vacía
+        mostrarResultados();
       }
     }
 
