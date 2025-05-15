@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Juego de Polinomios</title>
   <style>
     body {
@@ -17,7 +18,7 @@
     }
 
     .container {
-      background-color: #ffffff;
+      background-color: #fff;
       padding: 30px 40px;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -32,7 +33,8 @@
       margin-bottom: 15px;
     }
 
-    #timer, #jugador-nombre {
+    #timer,
+    #jugador-nombre {
       text-align: center;
       font-size: 1.2rem;
       color: #555;
@@ -40,8 +42,8 @@
     }
 
     #pregunta {
-      font-size: 1.2rem;
       font-weight: bold;
+      font-size: 1.2rem;
       margin-bottom: 20px;
       color: #444;
     }
@@ -108,7 +110,8 @@
       border-collapse: collapse;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ccc;
       padding: 10px;
     }
@@ -116,14 +119,14 @@
     th {
       background-color: #f0f0f0;
     }
-
   </style>
 </head>
+
 <body>
 
   <div class="container" id="login-container">
     <h2>Bienvenido al Juego de Polinomios</h2>
-    <input type="text" id="username" placeholder="Ingresa tu nombre">
+    <input type="text" id="username" placeholder="Ingresa tu nombre" />
     <button onclick="iniciarJuego()">Iniciar Juego</button>
   </div>
 
@@ -133,7 +136,7 @@
     <div id="timer">Tiempo: 2:00</div>
     <div id="pregunta"></div>
     <div id="opciones"></div>
-    <button id="siguiente" onclick="generarPregunta()" style="display:none;">Siguiente Pregunta</button>
+    <button id="siguiente" onclick="siguientePregunta()" style="display:none;">Siguiente Pregunta</button>
     <button id="finalizar" onclick="finalizarJuego()">Finalizar Juego</button>
   </div>
 
@@ -152,222 +155,241 @@
     <button onclick="reiniciarJuego()">Jugar de nuevo</button>
   </div>
 
-<script>
-        let jugadorActual = '';  
-    let tiempoRestante = 120;  
-    let intervalo;  
-    let respuestaRespondida = false;  
-    let respuestasCorrectas = 0;  
-    let preguntasRespondidas = 0;  
-    const totalPreguntas = 5;  
-  
-    function iniciarJuego() {  
-      const nombre = document.getElementById('username').value.trim();  
-      if (nombre === '') {  
-        alert('Por favor ingresa un nombre.');  
-        return;  
-      }  
-      jugadorActual = nombre;  
-      document.getElementById('jugador-nombre').textContent = `Jugador: ${jugadorActual}`;  
-      document.getElementById('login-container').style.display = 'none';  
-      document.getElementById('juego-container').style.display = 'block';  
-      generarPregunta();  
-    }  
-  
-    function iniciarTemporizador() {  
-      clearInterval(intervalo);  
-      tiempoRestante = 120;  
-      const timer = document.getElementById('timer');  
-      timer.textContent = 'Tiempo: 2:00';  
-  
-      intervalo = setInterval(() => {  
-        if (!respuestaRespondida) {  
-          tiempoRestante--;  
-          const minutos = Math.floor(tiempoRestante / 60);  
-          const segundos = tiempoRestante % 60;  
-          timer.textContent = `Tiempo: ${minutos}:${segundos.toString().padStart(2, '0')}`;  
-          if (tiempoRestante <= 0) {  
-            clearInterval(intervalo);  
-            alert("¡Tiempo terminado!");  
-            generarPregunta();  
-          }  
-        }  
-      }, 1000);  
-    }  
-  
-    function generarTrinomio() {  
-      let x1 = Math.floor(Math.random() * 10) - 5;  
-      let x2 = Math.floor(Math.random() * 10) - 5;  
-      const b = -(x1 + x2);  
-      const c = x1 * x2;  
-      const expresion = `x² ${b >= 0 ? '+ ' + b : '- ' + (-b)}x ${c >= 0 ? '+ ' + c : '- ' + (-c)}`;  
-      const factorizacion = `(x ${x1 >= 0 ? '- ' + x1 : '+ ' + (-x1)})(x ${x2 >= 0 ? '- ' + x2 : '+ ' + (-x2)})`;  
-      return { tipo: "Factoriza", expresion, correcta: factorizacion };  
-    }  
-  
-    function generarPolinomio(grado = 2) {  
-      return Array.from({ length: grado + 1 }, () => Math.floor(Math.random() * 11) - 5);  
-    }  
-  
-    function polinomioToStr(coefs) {  
-      return coefs.map((c, i) => {  
-        const exp = coefs.length - 1 - i;  
-        if (c === 0) return '';  
-        let term = '';  
-        if (exp === 0) term = `${c}`;  
-        else if (exp === 1) term = `${c === 1 ? '' : c === -1 ? '-' : c}x`;  
-        else term = `${c === 1 ? '' : c === -1 ? '-' : c}x^${exp}`;  
-        return term;  
-      }).filter(Boolean).join(' + ').replace(/\+\s-\s/g, '- ');  
-    }  
-  
-    function operarPolinomios(p1, p2, operacion) {  
-      const maxLen = Math.max(p1.length, p2.length);  
-      const a = Array(maxLen - p1.length).fill(0).concat(p1);  
-      const b = Array(maxLen - p2.length).fill(0).concat(p2);  
-      if (operacion === 'Suma') return a.map((v, i) => v + b[i]);  
-      if (operacion === 'Resta') return a.map((v, i) => v - b[i]);  
-      if (operacion === 'Multiplicación') {  
-        const result = Array(p1.length + p2.length - 1).fill(0);  
-        for (let i = 0; i < p1.length; i++) {  
-          for (let j = 0; j < p2.length; j++) {  
-            result[i + j] += p1[i] * p2[j];  
-          }  
-        }  
-        return result;  
-      }  
-    }  
-  
-    function generarOperacion() {  
-      const p1 = generarPolinomio();  
-      const p2 = generarPolinomio();  
-      const tipo = ['Suma', 'Resta', 'Multiplicación'][Math.floor(Math.random() * 3)];  
-      const correcta = operarPolinomios(p1, p2, tipo);  
-      return {  
-        tipo,  
-        expresion: `${polinomioToStr(p1)} ${tipo === 'Suma' ? '+' : tipo === 'Resta' ? '-' : '×'} ${polinomioToStr(p2)}`,  
-        correcta: polinomioToStr(correcta)  
-      };  
-    }  
-  
-    function generarDistractores(correcta) {  
-      const distractores = new Set();  
-      while (distractores.size < 2) {  
-        const ruido = correcta.replace(/\d+/g, m => `${parseInt(m) + Math.floor(Math.random() * 5 - 2)}`);  
-        if (ruido !== correcta) distractores.add(ruido);  
-      }  
-      return Array.from(distractores);  
-    }  
-  
-    function generarPregunta() {  
-      respuestaRespondida = false;  
-      clearInterval(intervalo);  
-      iniciarTemporizador();  
-  
-      if (preguntasRespondidas >= totalPreguntas) return;  
-  
-      const tipoDePregunta = Math.random() < 0.5 ? generarTrinomio() : generarOperacion();  
-      const distractores = generarDistractores(tipoDePregunta.correcta);  
-      const opciones = [tipoDePregunta.correcta, ...distractores].sort(() => Math.random() - 0.5);  
-  
-      document.getElementById('pregunta').innerHTML = `${tipoDePregunta.tipo}: ${tipoDePregunta.expresion}`;  
-      const contenedor = document.getElementById('opciones');  
-      contenedor.innerHTML = '';  
-  
-      opciones.forEach(opcion => {  
-        const div = document.createElement('div');  
-        div.className = 'opcion';  
-        div.innerHTML = opcion;  
-        div.onclick = () => {  
-          if (!respuestaRespondida) {  
-            clearInterval(intervalo);  
-            respuestaRespondida = true;  
-            if (opcion === tipoDePregunta.correcta) {  
-              respuestasCorrectas++;  
-              div.classList.add('correcta');  
-              alert('¡Correcto!');  
-            } else {  
-              div.classList.add('incorrecta');  
-              alert('Incorrecto. La correcta era: ' + tipoDePregunta.correcta);  
-            }  
-            preguntasRespondidas++;  
-            if (preguntasRespondidas < totalPreguntas) {  
-              document.getElementById('siguiente').style.display = 'block';  
-              document.getElementById('finalizar').style.display = 'none';  
-            } else {  
-              document.getElementById('siguiente').style.display = 'none';  
-              document.getElementById('finalizar').style.display = 'block';  
-            }  
-          }  
-        };  
-        contenedor.appendChild(div);  
-      });  
-    }  
+  <script>
+    const preguntas = [
+      {
+        tipo: "Resta", expresion: "3x² + 4x - 2 - x² + x - 5", correcta: "2x² + 3x + 3",
+        distractores: ["3x² + 4x + 2", "2x² + 2x + 4", "3x² + 2x + 4"]
+      },
+      {
+        tipo: "Suma", expresion: "x² - 2x + 3 + 2x² + 5x - 1", correcta: "3x² + 3x + 2",
+        distractores: ["x² + 5x + 2", "2x² - 3x + 4", "3x² + 4x - 3"]
+      },
+      {
+        tipo: "Multiplicación", expresion: "(x + 2)(x - 3)", correcta: "x² - x - 6",
+        distractores: ["x² + 5x + 6", "x² - 2x - 6", "x² + x - 6"]
+      },
+      {
+        tipo: "Factoriza", expresion: "x² + 5x + 6", correcta: "(x + 2)(x + 3)",
+        distractores: ["(x - 2)(x + 3)", "(x + 1)(x + 6)", "(x + 3)(x + 4)"]
+      },
+      {
+        tipo: "Resta", expresion: "5x² - 3x + 1 - 2x² + x - 4", correcta: "3x² - 4x - 3",
+        distractores: ["7x² - 2x - 3", "3x² - 2x - 3", "3x² - 4x + 3"]
+      },
+      {
+        tipo: "Suma", expresion: "4x² + x + 2 + x² - 3x + 1", correcta: "5x² - 2x + 3",
+        distractores: ["3x² - 2x + 3", "5x² + 2x + 3", "5x² - x + 3"]
+      },
+      {
+        tipo: "Multiplicación", expresion: "(x - 1)(x + 4)", correcta: "x² + 3x - 4",
+        distractores: ["x² - 3x - 4", "x² + 5x + 4", "x² + 3x + 4"]
+      },
+      {
+        tipo: "Factoriza", expresion: "x² - 7x + 12", correcta: "(x - 3)(x - 4)",
+        distractores: ["(x - 2)(x - 6)", "(x - 1)(x - 12)", "(x - 4)(x - 5)"]
+      },
+      {
+        tipo: "Resta", expresion: "6x² + 2x - 3 - 4x² + x + 1", correcta: "2x² + x - 4",
+        distractores: ["2x² + 3x - 2", "10x² + x - 2", "2x² - x - 4"]
+      },
+      {
+        tipo: "Suma", expresion: "x² + 3x + 1 + 2x² - x + 4", correcta: "3x² + 2x + 5",
+        distractores: ["3x² + 4x + 5", "x² + 2x + 5", "3x² - 2x + 5"]
+      },
+      {
+        tipo: "Multiplicación", expresion: "(x + 3)(x + 5)", correcta: "x² + 8x + 15",
+        distractores: ["x² + 15x + 8", "x² + 7x + 15", "x² + 8x + 8"]
+      },
+      {
+        tipo: "Factoriza", expresion: "x² - 8x + 15", correcta: "(x - 3)(x - 5)",
+        distractores: ["(x - 2)(x - 7)", "(x - 1)(x - 15)", "(x - 5)(x - 6)"]
+      },
+      {
+        tipo: "Resta", expresion: "7x² - x + 4 - 2x² + 3x - 1", correcta: "5x² - 4x + 3",
+        distractores: ["9x² + 2x + 3", "5x² - 2x + 3", "5x² - 4x - 3"]
+      },
+      {
+        tipo: "Suma", expresion: "2x² + 4x + 3 + 3x² - 2x + 2", correcta: "5x² + 2x + 5",
+        distractores: ["5x² + 6x + 5", "2x² + 2x + 5", "5x² - 2x + 5"]
+      },
+      {
+        tipo: "Multiplicación", expresion: "(x - 2)(x + 6)", correcta: "x² + 4x - 12",
+        distractores: ["x² - 8x - 12", "x² + 8x - 12", "x² + 4x + 12"]
+      },
+      {
+        tipo: "Factoriza", expresion: "x² + 6x + 8", correcta: "(x + 2)(x + 4)",
+        distractores: ["(x + 1)(x + 8)", "(x + 3)(x + 4)", "(x + 2)(x + 5)"]
+      },
+      {
+        tipo: "Resta", expresion: "4x² + 3x + 7 - x² + x - 4", correcta: "3x² + 2x + 3",
+        distractores: ["5x² + 2x + 3", "3x² + 4x + 3", "3x² + 2x + 1"]
+      },
+      {
+        tipo: "Suma", expresion: "3x² + x + 1 + 2x² + 3x + 4", correcta: "5x² + 4x + 5",
+        distractores: ["5x² + 2x + 5", "3x² + 4x + 5", "5x² + 4x + 3"]
+      },
+      {
+        tipo: "Multiplicación", expresion: "(x + 1)(x - 5)", correcta: "x² - 4x - 5",
+        distractores: ["x² + 4x - 5", "x² - 6x - 5", "x² - 4x + 5"]
+      }
+    ];
 
-function finalizarJuego() {
-  // Verifica si el jugador ha completado todas las preguntas
-  if (preguntasRespondidas < totalPreguntas) {
-    alert("No has respondido todas las preguntas.");
-    return;
+        let jugador = "";
+    let preguntasSeleccionadas = [];
+    let indicePregunta = 0;
+    let puntaje = 0;
+
+    function iniciarJuego() {
+      jugador = document.getElementById("username").value.trim();
+      if (!jugador) {
+        alert("Por favor ingresa tu nombre.");
+        return;
+      }
+      // Elegir 5 preguntas aleatorias sin repetición
+      preguntasSeleccionadas = [];
+      const indices = [];
+      while (indices.length < 5) {
+        let rand = Math.floor(Math.random() * preguntas.length);
+        if (!indices.includes(rand)) indices.push(rand);
+      }
+      preguntasSeleccionadas = indices.map(i => preguntas[i]);
+
+      indicePregunta = 0;
+      puntaje = 0;
+
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("resultados-container").style.display = "none";
+      document.getElementById("juego-container").style.display = "block";
+      document.getElementById("jugador-nombre").textContent = `Jugador: ${jugador}`;
+
+      mostrarPregunta();
+      iniciarTemporizador(120);
+    }
+
+    function mostrarPregunta() {
+      const pregunta = preguntasSeleccionadas[indicePregunta];
+      document.getElementById("pregunta").textContent = `${pregunta.tipo}: ${pregunta.expresion}`;
+      const opcionesDiv = document.getElementById("opciones");
+      opcionesDiv.innerHTML = "";
+
+      const opciones = [pregunta.correcta, ...pregunta.distractores];
+      // Mezclar opciones
+      for (let i = opciones.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [opciones[i], opciones[j]] = [opciones[j], opciones[i]];
+      }
+
+      opciones.forEach(opcionText => {
+        const btn = document.createElement("div");
+        btn.textContent = opcionText;
+        btn.className = "opcion";
+        btn.onclick = () => seleccionarOpcion(btn, opcionText === pregunta.correcta);
+        opcionesDiv.appendChild(btn);
+      });
+
+      document.getElementById("siguiente").style.display = "none";
+      document.getElementById("finalizar").style.display = "none";
+    }
+
+    function seleccionarOpcion(elemento, esCorrecta) {
+      const opciones = document.querySelectorAll(".opcion");
+      opciones.forEach(op => op.onclick = null); // Desactivar más clicks
+
+      if (esCorrecta) {
+        elemento.classList.add("correcta");
+        puntaje++;
+      } else {
+        elemento.classList.add("incorrecta");
+        // Resaltar la correcta también
+        opciones.forEach(op => {
+          if (op.textContent === preguntasSeleccionadas[indicePregunta].correcta) {
+            op.classList.add("correcta");
+          }
+        });
+      }
+      // Mostrar botón siguiente o finalizar
+      if (indicePregunta < preguntasSeleccionadas.length - 1) {
+        document.getElementById("siguiente").style.display = "block";
+      } else {
+        document.getElementById("finalizar").style.display = "block";
+      }
+    }
+
+    function siguientePregunta() {
+      indicePregunta++;
+      mostrarPregunta();
+    }
+
+    async function finalizarJuego() {
+  clearInterval(temporizadorId);
+  document.getElementById("juego-container").style.display = "none";
+
+  let mensajeEnvio = "";
+
+  try {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbz2-oh8CD14P_wfl_XE1UavpRkhBJAXWWBb6SZ4t5f_bcTJGesSGJXHaO85VZjTRbj3FA/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jugador: jugador,
+        puntaje: puntaje,
+        total: preguntasSeleccionadas.length,
+        fecha: new Date().toISOString()
+      })
+    });
+    const data = await response.json();
+    console.log('Respuesta de Apps Script:', data);
+    mensajeEnvio = "Resultados enviados correctamente.";
+  } catch (error) {
+    console.error('Error enviando resultados:', error);
+    mensajeEnvio = "Error al enviar resultados.";
   }
 
-  // Almacenar los datos para enviar
-  const data = {
-    jugador: jugadorActual,
-    correctas: respuestasCorrectas,
-    total: totalPreguntas
-  };
+  mostrarResultados();
 
-  // URL de la API de Google Apps Script
-  const url = 'https://script.google.com/macros/s/AKfycbz_uMVvP-p-bLOrQLWFGQjdM0XUoXKVkdCy7CViS6WJtPNqYxpsm2-2E6iMQLf7EMYYLA/exec';
-
-  // Enviar los datos a Google Sheets a través de la API
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.result === 'success') {
-      console.log('Resultados guardados con éxito');
-    } else {
-      console.error('Error al guardar los resultados:', data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error en la solicitud:', error);
-  });
-
-  // Mostrar los resultados en la interfaz de usuario
-  const tabla = document.getElementById('tabla-resultados').querySelector('tbody');
-  const fila = document.createElement('tr');
-  fila.innerHTML = `<td>${jugadorActual}</td><td>${respuestasCorrectas}</td><td>${totalPreguntas}</td>`;
-  tabla.appendChild(fila);
-
-  // Cambiar pantallas
-  document.getElementById('juego-container').style.display = 'none';
-  document.getElementById('resultados-container').style.display = 'block';
-
-  // Deshabilitar el botón para evitar que se haga clic más de una vez
-  document.getElementById('finalizar').disabled = true;
+  // Mostrar mensaje en el contenedor de resultados
+  const contenedor = document.getElementById("resultados-container");
+  let mensajeDiv = document.createElement("div");
+  mensajeDiv.textContent = mensajeEnvio;
+  mensajeDiv.style.marginTop = "10px";
+  mensajeDiv.style.fontWeight = "bold";
+  mensajeDiv.style.color = mensajeEnvio.includes("Error") ? "red" : "green";
+  contenedor.appendChild(mensajeDiv);
 }
 
-
-
-
     function reiniciarJuego() {
-      jugadorActual = '';
-      respuestasCorrectas = 0;
-      preguntasRespondidas = 0;
-      document.getElementById('username').value = '';
-      document.getElementById('login-container').style.display = 'block';
-      document.getElementById('resultados-container').style.display = 'none';
+      document.getElementById("resultados-container").style.display = "none";
+      document.getElementById("login-container").style.display = "block";
+      document.getElementById("username").value = "";
     }
-</script>
 
+    // Temporizador
+    let tiempoRestante = 120; // 2 minutos en segundos
+    let temporizadorId;
+
+    function iniciarTemporizador(segundos) {
+      tiempoRestante = segundos;
+      actualizarTimer();
+      if (temporizadorId) clearInterval(temporizadorId);
+      temporizadorId = setInterval(() => {
+        tiempoRestante--;
+        actualizarTimer();
+        if (tiempoRestante <= 0) {
+          clearInterval(temporizadorId);
+          alert("¡Se terminó el tiempo!");
+          finalizarJuego();
+        }
+      }, 1000);
+    }
+
+    function actualizarTimer() {
+      const minutos = Math.floor(tiempoRestante / 60);
+      const segundos = tiempoRestante % 60;
+      document.getElementById("timer").textContent = `Tiempo: ${minutos}:${segundos.toString().padStart(2, '0')}`;
+    }
+  </script>
 
 </body>
+
 </html>
