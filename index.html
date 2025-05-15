@@ -1,132 +1,96 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <title>Juego de Polinomios</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to right, #eef2f3, #8e9eab);
-      margin: 0;
       padding: 40px;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       flex-direction: column;
+      align-items: center;
     }
-
     .container {
-      background-color: #fff;
-      padding: 30px 40px;
+      background: #fff;
+      padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       max-width: 600px;
       width: 100%;
       margin-bottom: 20px;
     }
-
-    h2 {
+    h2, #timer, #jugador-nombre {
       text-align: center;
-      color: #333;
-      margin-bottom: 15px;
     }
-
-    #timer,
-    #jugador-nombre {
-      text-align: center;
-      font-size: 1.2rem;
-      color: #555;
-      margin-bottom: 10px;
-    }
-
     #pregunta {
       font-weight: bold;
       font-size: 1.2rem;
-      margin-bottom: 20px;
       color: #444;
+      margin-bottom: 20px;
     }
-
     .opcion {
-      background-color: #f8f9fa;
+      background: #f8f9fa;
       border: 2px solid #dee2e6;
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 15px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 1rem;
+      transition: 0.3s;
     }
-
     .opcion:hover {
-      background-color: #e2e6ea;
+      background: #e2e6ea;
     }
-
     .correcta {
-      background-color: #d4edda !important;
+      background: #d4edda !important;
       border-color: #28a745;
       color: #155724;
     }
-
     .incorrecta {
-      background-color: #f8d7da !important;
+      background: #f8d7da !important;
       border-color: #dc3545;
       color: #721c24;
     }
-
     button {
-      display: block;
       width: 100%;
       padding: 12px;
-      margin-top: 20px;
       font-size: 1rem;
-      background-color: #007bff;
+      background: #007bff;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      margin-top: 20px;
     }
-
     button:hover {
-      background-color: #0056b3;
+      background: #0056b3;
     }
-
     #finalizar {
       display: none;
-      background-color: #28a745;
+      background: #28a745;
     }
-
-    #login-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 15px 0;
-      font-size: 1rem;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
     }
-
-    th,
-    td {
+    th, td {
       border: 1px solid #ccc;
       padding: 10px;
+      text-align: center;
     }
-
     th {
       background-color: #f0f0f0;
     }
+    #reiniciar-jugadores {
+      background-color: #dc3545;
+    }
   </style>
 </head>
-
 <body>
-
   <div class="container" id="login-container">
     <h2>Bienvenido al Juego de Polinomios</h2>
-    <input type="text" id="username" placeholder="Ingresa tu nombre" />
+    <input type="text" id="username" placeholder="Ingresa tu nombre" style="width:100%; padding:10px; margin:15px 0; font-size:1rem;" />
     <button onclick="iniciarJuego()">Iniciar Juego</button>
   </div>
 
@@ -144,143 +108,119 @@
     <h2>Resultados del Juego</h2>
     <table id="tabla-resultados">
       <thead>
-        <tr>
-          <th>Jugador</th>
-          <th>Correctas</th>
-          <th>Total</th>
-        </tr>
+        <tr><th>Jugador</th><th>Correctas</th><th>Total</th></tr>
       </thead>
       <tbody></tbody>
     </table>
     <button onclick="reiniciarJuego()">Jugar de nuevo</button>
+    <button id="reiniciar-jugadores" onclick="reiniciarJugadores()">Reiniciar jugadores</button>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "juegopolinomios",
+      storageBucket: "juegopolinomios.appspot.com",
+      messagingSenderId: "127486769408",
+      appId: "1:127486769408:web:4376ae7a3ed719d084dbe5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const preguntas = [
-      {
-        tipo: "Resta", expresion: "3x² + 4x - 2 - x² + x - 5", correcta: "2x² + 3x + 3",
-        distractores: ["3x² + 4x + 2", "2x² + 2x + 4", "3x² + 2x + 4"]
-      },
-      {
-        tipo: "Suma", expresion: "x² - 2x + 3 + 2x² + 5x - 1", correcta: "3x² + 3x + 2",
-        distractores: ["x² + 5x + 2", "2x² - 3x + 4", "3x² + 4x - 3"]
-      },
-      {
-        tipo: "Multiplicación", expresion: "(x + 2)(x - 3)", correcta: "x² - x - 6",
-        distractores: ["x² + 5x + 6", "x² - 2x - 6", "x² + x - 6"]
-      },
-      {
-        tipo: "Factoriza", expresion: "x² + 5x + 6", correcta: "(x + 2)(x + 3)",
-        distractores: ["(x - 2)(x + 3)", "(x + 1)(x + 6)", "(x + 3)(x + 4)"]
-      },
-      {
-        tipo: "Resta", expresion: "5x² - 3x + 1 - 2x² + x - 4", correcta: "3x² - 4x - 3",
-        distractores: ["7x² - 2x - 3", "3x² - 2x - 3", "3x² - 4x + 3"]
-      }
+      { tipo: "Resta", expresion: "3x² + 4x - 2 - x² + x - 5", correcta: "2x² + 3x + 3", distractores: ["3x² + 4x + 2", "2x² + 2x + 4", "3x² + 2x + 4"] },
+      { tipo: "Suma", expresion: "x² - 2x + 3 + 2x² + 5x - 1", correcta: "3x² + 3x + 2", distractores: ["x² + 5x + 2", "2x² - 3x + 4", "3x² + 4x - 3"] },
+      { tipo: "Multiplicación", expresion: "(x + 2)(x - 3)", correcta: "x² - x - 6", distractores: ["x² + 5x + 6", "x² - 2x - 6", "x² + x - 6"] },
+      { tipo: "Factoriza", expresion: "x² + 5x + 6", correcta: "(x + 2)(x + 3)", distractores: ["(x - 2)(x + 3)", "(x + 1)(x + 6)", "(x + 3)(x + 4)"] }
     ];
 
-       let jugador = "";
-    let preguntasSeleccionadas = [];
-    let indicePregunta = 0;
-    let puntaje = 0;
-    let tiempoRestante = 120;
-    let temporizadorId;
+    let jugador = "", preguntasSeleccionadas = [], indicePregunta = 0, puntaje = 0, tiempoRestante = 120, temporizadorId;
 
-    function iniciarJuego() {
+    window.iniciarJuego = function() {
       jugador = document.getElementById("username").value.trim();
-      if (!jugador) {
-        alert("Por favor ingresa tu nombre.");
-        return;
-      }
-
-      preguntasSeleccionadas = [];
-      const indices = [];
-      while (indices.length < 5) {
-        let rand = Math.floor(Math.random() * preguntas.length);
-        if (!indices.includes(rand)) indices.push(rand);
-      }
-      preguntasSeleccionadas = indices.map(i => preguntas[i]);
-
-      indicePregunta = 0;
-      puntaje = 0;
-
+      if (!jugador) return alert("Ingresa tu nombre.");
+      preguntasSeleccionadas = preguntas.sort(() => 0.5 - Math.random()).slice(0, 5);
+      indicePregunta = 0; puntaje = 0;
       document.getElementById("login-container").style.display = "none";
       document.getElementById("resultados-container").style.display = "none";
       document.getElementById("juego-container").style.display = "block";
       document.getElementById("jugador-nombre").textContent = `Jugador: ${jugador}`;
-
       mostrarPregunta();
       iniciarTemporizador(120);
-    }
+    };
 
     function mostrarPregunta() {
-      const pregunta = preguntasSeleccionadas[indicePregunta];
-      document.getElementById("pregunta").textContent = `${pregunta.tipo}: ${pregunta.expresion}`;
-      const opcionesDiv = document.getElementById("opciones");
-      opcionesDiv.innerHTML = "";
-
-      const opciones = [pregunta.correcta, ...pregunta.distractores];
-      for (let i = opciones.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [opciones[i], opciones[j]] = [opciones[j], opciones[i]];
-      }
-
-      opciones.forEach(opcionText => {
-        const btn = document.createElement("div");
-        btn.textContent = opcionText;
-        btn.className = "opcion";
-        btn.onclick = () => seleccionarOpcion(btn, opcionText === pregunta.correcta);
-        opcionesDiv.appendChild(btn);
+      const p = preguntasSeleccionadas[indicePregunta];
+      document.getElementById("pregunta").textContent = `${p.tipo}: ${p.expresion}`;
+      const opciones = [p.correcta, ...p.distractores].sort(() => 0.5 - Math.random());
+      const contenedor = document.getElementById("opciones");
+      contenedor.innerHTML = "";
+      opciones.forEach(op => {
+        const div = document.createElement("div");
+        div.className = "opcion";
+        div.textContent = op;
+        div.onclick = () => seleccionarOpcion(div, op === p.correcta);
+        contenedor.appendChild(div);
       });
-
       document.getElementById("siguiente").style.display = "none";
       document.getElementById("finalizar").style.display = "none";
     }
 
-    function seleccionarOpcion(elemento, esCorrecta) {
-      const opciones = document.querySelectorAll(".opcion");
-      opciones.forEach(op => op.onclick = null);
-
-      if (esCorrecta) {
-        elemento.classList.add("correcta");
-        puntaje++;
-      } else {
-        elemento.classList.add("incorrecta");
-        opciones.forEach(op => {
-          if (op.textContent === preguntasSeleccionadas[indicePregunta].correcta) {
-            op.classList.add("correcta");
-          }
+    function seleccionarOpcion(el, correcto) {
+      document.querySelectorAll(".opcion").forEach(op => op.onclick = null);
+      if (correcto) { el.classList.add("correcta"); puntaje++; }
+      else {
+        el.classList.add("incorrecta");
+        document.querySelectorAll(".opcion").forEach(op => {
+          if (op.textContent === preguntasSeleccionadas[indicePregunta].correcta) op.classList.add("correcta");
         });
       }
-
-      if (indicePregunta < preguntasSeleccionadas.length - 1) {
-        document.getElementById("siguiente").style.display = "block";
-      } else {
-        document.getElementById("finalizar").style.display = "block";
-      }
+      if (indicePregunta < preguntasSeleccionadas.length - 1) document.getElementById("siguiente").style.display = "block";
+      else document.getElementById("finalizar").style.display = "block";
     }
 
-    function siguientePregunta() {
+    window.siguientePregunta = function() {
       indicePregunta++;
       mostrarPregunta();
     }
 
-    function finalizarJuego() {
+    window.finalizarJuego = async function() {
       clearInterval(temporizadorId);
       document.getElementById("juego-container").style.display = "none";
+      await addDoc(collection(db, "resultados"), { jugador, puntaje, total: preguntasSeleccionadas.length });
       mostrarResultados();
     }
 
-    function mostrarResultados() {
+    async function mostrarResultados() {
       document.getElementById("resultados-container").style.display = "block";
       const tbody = document.querySelector("#tabla-resultados tbody");
       tbody.innerHTML = "";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${jugador}</td><td>${puntaje}</td><td>${preguntasSeleccionadas.length}</td>`;
-      tbody.appendChild(tr);
+      const querySnapshot = await getDocs(collection(db, "resultados"));
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${data.jugador}</td><td>${data.puntaje}</td><td>${data.total}</td>`;
+        tbody.appendChild(tr);
+      });
     }
 
-    function reiniciarJuego() {
+    window.reiniciarJugadores = async function reiniciarJugadores() {
+      if (confirm("¿Estás seguro que quieres eliminar todos los resultados?")) {
+        const snapshot = await getDocs(collection(db, "resultados"));
+        const batch = writeBatch(db);
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        alert("Todos los jugadores han sido eliminados.");
+        mostrarResultados(); // refresca tabla vacía
+      }
+    }
+
+    window.reiniciarJuego = function() {
       document.getElementById("resultados-container").style.display = "none";
       document.getElementById("login-container").style.display = "block";
       document.getElementById("username").value = "";
@@ -302,12 +242,10 @@
     }
 
     function actualizarTimer() {
-      const minutos = Math.floor(tiempoRestante / 60);
-      const segundos = tiempoRestante % 60;
-      document.getElementById("timer").textContent = `Tiempo: ${minutos}:${segundos.toString().padStart(2, '0')}`;
+      const m = Math.floor(tiempoRestante / 60);
+      const s = tiempoRestante % 60;
+      document.getElementById("timer").textContent = `Tiempo: ${m}:${s.toString().padStart(2, '0')}`;
     }
   </script>
-
 </body>
-
 </html>
